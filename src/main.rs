@@ -1,6 +1,7 @@
 use std::io;
 
-const PATTERN_LENGTH: usize = 10;
+const PATTERN_LENGTH: usize = 80;
+const GENERATION_COUNT: usize = 20;
 
 fn main() {
     println!("Rule 110");
@@ -9,6 +10,7 @@ fn main() {
 
     let mut pattern_ok: bool = false;
     let mut pattern = String::new();
+    let mut generation = 1;
 
     while !pattern_ok {
         println!("Enter a starting pattern: ");
@@ -20,22 +22,42 @@ fn main() {
         }
     }
 
-    let pattern_vec: Vec<char> = build_full_pattern(pattern.chars().collect());
+    let mut pattern_vec: Vec<char> = build_full_pattern(pattern.chars().collect());
     let printable_pattern: String = pattern_vec.iter().cloned().collect();
-    println!("full pattern: {}", printable_pattern);
-    println!("pattern len: {}", printable_pattern.len());
+    println!("{}", printable_pattern); // print the full original pattern
 
-    let subpattern: Vec<char> = pattern.chars().skip(2).take(3).collect();
-
-    let subpattern_str: String = subpattern.iter().cloned().collect();
-    //println!("{}", subpattern_str);
-    //println!("{}", subpattern[1]);
+    while generation <= GENERATION_COUNT {
+        let next_gen = next_generation(&pattern_vec);
+        let printable_next_gen: String = next_gen.iter().cloned().collect();
+        println!("{}", printable_next_gen);
+        pattern_vec = next_gen.clone();
+        generation += 1;
+    }
 }
 
-fn next_generation(pattern: &mut Vec<u8>) -> &mut Vec<u8> {
-    let pattern_len = pattern.len();
-    println!("length: {}", pattern_len);
-    pattern
+fn next_generation(pattern: &Vec<char>) -> Vec<char> {
+    let mut next_pattern = Vec::new();
+    next_pattern.push('0');
+    let mut char_index = 1;
+    let max_char_index = pattern.len() - 1;
+    while char_index < max_char_index {
+        let sub_pattern_start = char_index - 1;
+        let sub_pattern_end = char_index + 2;
+        let next_char = next_value(&pattern[sub_pattern_start..sub_pattern_end]);
+        next_pattern.push(next_char);
+        char_index += 1;
+    }
+    next_pattern.push(pattern[char_index]);
+    next_pattern.to_owned()
+}
+
+fn next_value(sub_pattern: &[char]) -> char {
+    // I'd like to use slice matching but it's not supported yet
+    if sub_pattern == ['1', '1', '1'] || sub_pattern == ['0', '0', '1'] || sub_pattern == ['0', '0', '0'] {
+        '0'
+    } else {
+        '1'
+    }
 }
 
 fn validate_pattern(pattern: Vec<char>) -> bool {
